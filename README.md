@@ -64,11 +64,7 @@ in the app needs to change.
 ### Docking
 
 `app.py` requests a full screen dock space
-(`DefaultImGuiWindowType.provide_full_scr
-- The window geometry, the dock layout and the panel visibility are stored by
-  hello_imgui in `python_imgui_settings.ini` (see `runner_params.ini_filename`;
-  it is written in the working directory by default), which is why `.gitignore`
-  ignores `*.ini`. Delete it to fall back to the default layout.een_dock_space`) and places every panel
+(`DefaultImGuiWindowType.provide_full_screen_dock_space`) and places every panel
 in `MainDockSpace`:
 
 - with one panel, that space is the whole window, so the panel takes all the
@@ -76,7 +72,11 @@ in `MainDockSpace`:
 - with several, they share it — drag a tab to split the space — and the layout,
   including which panels are visible, is remembered between runs;
 - the **View** menu of the menu bar (`show_menu_bar`) lists the panels and can
-  restore the default layout, the escape hatch if a panel is closed or lost.
+  restore the default layout, the escape hatch if a panel is closed or lost;
+- the window geometry, the dock layout and the panel visibility are stored by
+  hello_imgui in `python_imgui_settings.ini` (see `runner_params.ini_filename`;
+  it is written in the working directory by default), which is why `.gitignore`
+  ignores `*.ini`. Delete it to fall back to the default layout.
 
 Multi-viewports are enabled (`enable_viewports`), so a panel can be detached
 into its own native window and moved to another monitor: drag its tab out of the
@@ -97,3 +97,19 @@ true), so `app.py` clears that flag in its `setup_imgui_config` callback.
   just a matter of picking the right texture every frame.
 - Idling is disabled (`fps_idling.enable_idling = False`) so the GIF keeps
   animating when the mouse is not moving.
+- The window keeps drawing while the user drags a window border. Windows
+  normally runs that drag in a *modal* loop inside the window procedure: the
+  render loop stops until the mouse is released, and the last frame is stretched
+  over the new size. `REPAINT_DURING_RESIZE` deals with it by asking hello_imgui
+  to render from inside that loop
+  (`app_window_params.repaint_during_resize_gotcha_reentrant_repaint`). It
+  repaints on `WM_SIZE`, i.e. before the step has settled, and it renders a frame
+  from inside an event handler, so panel `draw()` code is called re-entrantly and
+  must not assume "exactly once per frame". Upstream considers this
+  advanced/unsupported API
+  ([hello_imgui#112](https://github.com/pthom/hello_imgui/issues/112)).
+- A *decorated* window can only redraw *after* a resize step, so the frame
+  presented during a drag is briefly scaled to the new size. Resizing a borderless
+  window is smooth instead, because hello_imgui then resizes within ImGui's own
+  frame. hello_imgui#112 suggests repainting from `WM_PAINT` (the GLFW *window
+  refresh* callback) to close that gap - a change on the library side.

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 import traceback
 
 from imgui_bundle import hello_imgui, imgui, immapp
@@ -13,6 +12,15 @@ from .panels import Panel, create_panels
 #: is requested. Every panel starts there, so a single panel fills the whole
 #: window; adding panels makes them share it (as tabs by default).
 MAIN_DOCK_SPACE = "MainDockSpace"
+
+#: Repaint the window from inside Windows' modal resize loop, by the grace of
+#: hello_imgui. Dragging a border of a decorated window on Windows enters that
+#: modal loop, so the application cannot render and Windows stretches the last
+#: frame. Upstream marks the setting as advanced/not supported, because the
+#: repaint re-enters the render loop: panel `draw()` gets called from the middle
+#: of event handling and must not rely on "exactly once per frame".
+#: Upstream analysis: https://github.com/pthom/hello_imgui/issues/112
+REPAINT_DURING_RESIZE = True
 
 
 def _setup_imgui_config() -> None:
@@ -27,15 +35,7 @@ def _setup_imgui_config() -> None:
     issues at OS levels (e.g. minimum window size)".)
     """
     hello_imgui.imgui_default_settings.setup_default_imgui_config()
-    io = imgui.get_io()
-    if hasattr(io, "config_viewports_no_decoration"):
-        io.config_viewports_no_decoration = False
-    else:  # pragma: no cover - depends on the imgui-bundle build
-        print(
-            "cat-gifs: io.config_viewports_no_decoration is not exposed by this "
-            "imgui-bundle build, so detached panels will have no OS title bar.",
-            file=sys.stderr,
-        )
+    imgui.get_io().config_viewports_no_decoration = False
 
 
 def main() -> None:
@@ -75,6 +75,11 @@ def main() -> None:
     runner_params = immapp.RunnerParams()
     runner_params.app_window_params.window_title = "Cat GIFs"
     runner_params.app_window_params.window_geometry.size = (900, 700)
+
+    # Keep drawing while the user drags a window border (see REPAINT_DURING_RESIZE).
+    runner_params.app_window_params.repaint_during_resize_gotcha_reentrant_repaint = (
+        REPAINT_DURING_RESIZE
+    )
 
     # Name of the settings file (window geometry, dock layout, panel
     # visibility). It is written inside `ini_folder_type` - the working
