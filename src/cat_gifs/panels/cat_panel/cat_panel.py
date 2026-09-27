@@ -46,7 +46,8 @@ class _GifTextures:
 class CatPanel:
     """The "Cat" panel: a random animated cat GIF with a "Get Cat" button."""
 
-    WINDOW_TITLE = "Cat"
+    #: Title of the panel's dockable window (also the label of its tab).
+    label: str = "Cat"
 
     def __init__(self) -> None:
         self._cat: Union[CatGif, None] = None
@@ -121,7 +122,13 @@ class CatPanel:
     # --------------------------------------------------------------------- ui
 
     def draw(self) -> None:
-        """Draw the panel (called once per frame, on the GUI thread)."""
+        """Draw the panel content (called once per frame, on the GUI thread).
+
+        The panel does not open a window itself: it is registered as a dockable
+        window, so hello_imgui calls ``imgui.begin()``/``imgui.end()`` around
+        this method (see ``app.py``). The content therefore fills whatever space
+        the dock layout grants the panel.
+        """
         self._collect_download()
         self._advance_animation()
 
@@ -129,12 +136,9 @@ class CatPanel:
         if self._cat is None and not self._is_loading and self._error is None:
             self.request_new_cat()
 
-        imgui.set_next_window_size(hello_imgui.em_to_vec2(60.0, 45.0), imgui.Cond_.first_use_ever)
-        imgui.begin(self.WINDOW_TITLE)
         self._draw_toolbar()
         imgui.separator()
         self._draw_picture()
-        imgui.end()
 
     def _draw_toolbar(self) -> None:
         # Snapshot the state: the button handler below changes it, and
