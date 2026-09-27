@@ -65,10 +65,10 @@ in the app needs to change.
 
 `app.py` requests a full screen dock space
 (`DefaultImGuiWindowType.provide_full_scr
-- The dock layout and the window geometry are stored by hello_imgui in an ini
-  file in the working directory (named after the window title, so
-  `Cat GIFs.ini`), which is why `.gitignore` ignores `*.ini`. Delete it to fall
-  back to the default layout.een_dock_space`) and places every panel
+- The window geometry, the dock layout and the panel visibility are stored by
+  hello_imgui in `python_imgui_settings.ini` (see `runner_params.ini_filename`;
+  it is written in the working directory by default), which is why `.gitignore`
+  ignores `*.ini`. Delete it to fall back to the default layout.een_dock_space`) and places every panel
 in `MainDockSpace`:
 
 - with one panel, that space is the whole window, so the panel takes all the

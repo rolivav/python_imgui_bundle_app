@@ -52,6 +52,12 @@ def main() -> None:
     runner_params.app_window_params.window_title = "Cat GIFs"
     runner_params.app_window_params.window_geometry.size = (900, 700)
 
+    # Name of the settings file (window geometry, dock layout, panel
+    # visibility). It is written inside `ini_folder_type` - the working
+    # directory by default - and takes precedence over the name that is
+    # otherwise derived from the window title.
+    runner_params.ini_filename = "python_imgui_settings.ini"
+
     # Docking: hello_imgui provides a full screen dock space, and every panel is
     # a dockable window inside it. With one panel, "MainDockSpace" covers the
     # whole window, so that panel occupies all the available space; with several
