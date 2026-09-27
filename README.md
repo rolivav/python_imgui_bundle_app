@@ -78,6 +78,15 @@ in `MainDockSpace`:
 - the **View** menu of the menu bar (`show_menu_bar`) lists the panels and can
   restore the default layout, the escape hatch if a panel is closed or lost.
 
+Multi-viewports are enabled (`enable_viewports`), so a panel can be detached
+into its own native window and moved to another monitor: drag its tab out of the
+main window (Shift + drag on the tab undocks it into a floating window first).
+Its position is stored in the settings file like any other window.
+
+Detached panels get real OS window decorations (title bar, borders, buttons):
+ImGui disables them by default (`io.ConfigViewportsNoDecoration` defaults to
+true), so `app.py` clears that flag in its `setup_imgui_config` callback.
+
 ## Notes on the implementation
 
 - The download runs on a worker thread so the GUI never blocks; the result is

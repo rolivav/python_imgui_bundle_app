@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import sys
 import traceback
 
-from imgui_bundle import hello_imgui, immapp
+from imgui_bundle import hello_imgui, imgui, immapp
 
 from .panels import Panel, create_panels
 
@@ -12,6 +13,29 @@ from .panels import Panel, create_panels
 #: is requested. Every panel starts there, so a single panel fills the whole
 #: window; adding panels makes them share it (as tabs by default).
 MAIN_DOCK_SPACE = "MainDockSpace"
+
+
+def _setup_imgui_config() -> None:
+    """Apply hello_imgui's default ImGui configuration, plus our own tweaks.
+
+    By default, ImGui creates the native window of a detached panel *without*
+    OS window decorations: `io.ConfigViewportsNoDecoration` defaults to true, so
+    such a window gets ImGui's own title bar and nothing else. Clearing that
+    flag gives it a real Windows title bar, borders and buttons.
+
+    (Heads-up, quoted from imgui.h: "Enabling decoration can create subsequent
+    issues at OS levels (e.g. minimum window size)".)
+    """
+    hello_imgui.imgui_default_settings.setup_default_imgui_config()
+    io = imgui.get_io()
+    if hasattr(io, "config_viewports_no_decoration"):
+        io.config_viewports_no_decoration = False
+    else:  # pragma: no cover - depends on the imgui-bundle build
+        print(
+            "cat-gifs: io.config_viewports_no_decoration is not exposed by this "
+            "imgui-bundle build, so detached panels will have no OS title bar.",
+            file=sys.stderr,
+        )
 
 
 def main() -> None:
@@ -69,6 +93,17 @@ def main() -> None:
     # The "View" menu of the menu bar lists the panels (show/hide) and restores
     # the default layout - the escape hatch once there are several panels.
     runner_params.imgui_window_params.show_menu_bar = True
+
+    # Multi-viewports: a panel dragged out of the main window becomes a real
+    # native window, which can then be moved to another monitor. To detach one,
+    # drag its tab outside the window (Shift + drag on the tab undocks it into a
+    # floating window first). Like any other window, its position is restored
+    # from the settings file.
+    runner_params.imgui_window_params.enable_viewports = True
+    # ... and give detached panels the same OS chrome as the main window instead
+    # of ImGui's own title bar (see the callback for why that is not the default).
+    runner_params.callbacks.setup_imgui_config = _setup_imgui_config
+
     runner_params.docking_params.dockable_windows = [
         make_dockable_window(panel) for panel in panels
     ]
