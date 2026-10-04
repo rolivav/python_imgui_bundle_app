@@ -1,15 +1,18 @@
 # Cat GIFs
 
 A small [Dear ImGui Bundle](https://imgui-bundle.pages.dev/) application whose
-frontend is ImGui. It ships with two panels:
+frontend is ImGui. It ships with three panels:
 
 - **Cat**, which displays a random animated cat GIF fetched from
   [cataas.com](https://cataas.com/);
 - **Dog**, which displays a random dog picture fetched from
-  [dog.ceo](https://dog.ceo/dog-api/).
+  [dog.ceo](https://dog.ceo/dog-api/);
+- **Bird**, which displays a random bird picture fetched from
+  [Ornithophile](https://github.com/tustoz/ornithophile) — no API key, but note
+  its academic licence (see "Requirements").
 
 When a panel is first shown it fetches a random picture; its **Get Cat** /
-**Get Dog** button fetches a new one.
+**Get Dog** / **Get Bird** button fetches a new one.
 
 Panels are dockable windows inside a full screen dock space, so the panel fills
 the whole window on its own, and upcoming panels will share that space (tabs,
@@ -27,6 +30,13 @@ Registry. The HTTP client shells out to the `curl` command line tool, so no HTTP
 library has to be linked or installed on Windows (curl ships with Windows 10+) or
 macOS; on Linux, install `curl` if it is missing. Consuming the prebuilt wheels
 instead (see "Testing the wheel workflow with a local index") needs none of that.
+
+Its sibling `bird-core` is written in Rust and built with
+[maturin](https://www.maturin.rs/), so it needs a [Rust](https://rustup.rs/)
+toolchain; it reads its bird data from the free
+[Ornithophile](https://github.com/tustoz/ornithophile) API, which needs no key.
+Note its licence: free for academic, research and educational use only, with
+credit to *Maxi Aditya Kusuma Winarjo*, and no commercial use without permission.
 
 ## Run
 
@@ -46,8 +56,8 @@ uv sync && uv run cat-gifs
 
 ## Project layout
 
-Two projects: the application, and the panel it displays (panels are separate
-distributions, see below).
+Two kinds of projects: the application, and the distributions it consumes — the
+panels and the native cores, each one its own project (see below).
 
 ```
 .
@@ -70,13 +80,24 @@ distributions, see below).
     │       ├── __init__.py           # public API of the panel
     │       ├── dog.py                # model (decode + call the native core)
     │       └── dog_panel.py          # logic + UI
-    └── dog_core/                     # the native (C++) image-procurement core
+    ├── dog_core/                     # the native (C++) image-procurement core
         ├── pyproject.toml            # distribution `dog-core` (hatchling + Bazel hook)
         ├── BUILD.bazel               # one C++ library + the Python extension
         ├── MODULE.bazel              # Bazel deps (nanobind, nlohmann/json)
         ├── hatch_build.py            # compiles the extension with Bazel
         ├── cpp/dog_core.cpp          # HTTP + JSON in C++
         └── src/dog_core/__init__.py  # Python wrapper
+    ├── bird_panel/                   # the "Bird" panel, as its own project
+    │   ├── pyproject.toml            # distribution `bird-panel`
+    │   └── src/bird_panel/
+    │       ├── __init__.py           # public API of the panel
+    │       ├── bird.py               # model (decode + call the native core)
+    │       └── bird_panel.py         # logic + UI
+    └── bird_core/                    # the native (Rust) image-procurement core
+        ├── pyproject.toml            # distribution `bird-core` (maturin)
+        ├── Cargo.toml                # the Rust crate (PyO3, stable ABI)
+        ├── src/lib.rs                # HTTP + JSON in Rust
+        └── src/bird_core/__init__.py # Python wrapper (resolves the API key)
 ```
 
 ### Panels are self-contained

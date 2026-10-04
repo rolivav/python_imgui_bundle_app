@@ -18,8 +18,8 @@ Adding a panel therefore takes three steps:
 
 1. Write it as its own distribution (copy ``packages/cat_panel/`` as a starting
    point) exposing a class with a ``label`` and a ``draw()`` method.
-2. Add that distribution to the dependencies of this project, with a
-   ``[tool.uv.sources]`` entry while it is not published yet.
+2. Add that distribution to the dependencies of this project (and build/publish
+   its wheel: see the repository README).
 3. Add its class to :data:`PANEL_TYPES` below.
 """
 
@@ -27,6 +27,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
+from bird_panel import BirdPanel
 from cat_panel import CatPanel
 from dog_panel import DogPanel
 
@@ -44,7 +45,7 @@ class Panel(Protocol):
 
 
 # Register the panels of the application here.
-PANEL_TYPES: tuple[type, ...] = (CatPanel, DogPanel)
+PANEL_TYPES: tuple[type, ...] = (BirdPanel, CatPanel, DogPanel)
 
 
 def create_panels() -> list[Panel]:
@@ -52,4 +53,4 @@ def create_panels() -> list[Panel]:
     return [panel_type() for panel_type in PANEL_TYPES]
 
 
-__all__ = ["CatPanel", "DogPanel", "Panel", "PANEL_TYPES", "create_panels"]
+__all__ = ["BirdPanel", "CatPanel", "DogPanel", "Panel", "PANEL_TYPES", "create_panels"]

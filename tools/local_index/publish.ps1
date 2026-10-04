@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Build the panels and the native core into the local index's package folder.
+Build the distributions under `packages/` into the local index's package folder.
 
 .DESCRIPTION
 Runs `uv build` for each distribution into `dist/` and copies the artifacts
@@ -27,7 +27,7 @@ Examples:
 #>
 [CmdletBinding()]
 param(
-    [string[]]$Packages = @("cat_panel", "dog_panel", "dog_core")
+    [string[]]$Packages
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,6 +36,14 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $buildDir = Join-Path $repoRoot "dist"
 $packagesDir = Join-Path $PSScriptRoot "packages"
 New-Item -ItemType Directory -Force -Path $packagesDir | Out-Null
+
+if (-not $Packages) {
+    # Everything under `packages/` is published by default.
+    $Packages = Get-ChildItem -LiteralPath (Join-Path $repoRoot "packages") -Directory |
+        Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "pyproject.toml") } |
+        Sort-Object -Property Name |
+        Select-Object -ExpandProperty Name
+}
 
 foreach ($project in $Packages) {
     $source = Join-Path $repoRoot "packages/$project"

@@ -1,0 +1,20 @@
+[package]
+name = "bird_core"
+version = "0.1.0"
+edition = "2021"
+description = "Native image procurement for the Bird panel (HTTP + JSON in Rust)"
+# The *wheel* is what gets published; the crate itself does not go to crates.io.
+publish = false
+
+[lib]
+# Must match the module declared by `#[pymodule]` / `module-name` in pyproject.
+name = "_bird_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+# The stable ABI (abi3) means one wheel works on every Python >= 3.10 instead of
+# one wheel per interpreter version.
+pyo3 = { version = "0.23", features = ["extension-module", "abi3-py310"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+fastrand = "2"

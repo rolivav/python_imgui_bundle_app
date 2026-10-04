@@ -1,0 +1,17 @@
+[project]
+name = "bird-core"
+version = "0.1.0"
+description = "Native (Rust) image procurement core for the Bird panel"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+# Mixed layout: the compiled module is `bird_core._bird_core`, next to the Python
+# wrapper in `src/bird_core`.
+module-name = "bird_core._bird_core"
+python-source = "src"

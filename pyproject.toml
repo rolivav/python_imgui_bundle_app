@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "imgui-bundle>=1.92.900",
+    "bird-core",
+    "bird-panel",
     "cat-panel",
     "dog-panel",
     "dog-core",

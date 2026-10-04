@@ -43,12 +43,18 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $buildDir = Join-Path $repoRoot "dist"
-$packages = @("cat_panel", "dog_panel", "dog_core")
+
+# Every distribution under `packages/` (its folder name is its distribution name
+# with dashes) is built from its own folder - but only while it is stale.
+$packages = Get-ChildItem -LiteralPath (Join-Path $repoRoot "packages") -Directory |
+    Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "pyproject.toml") } |
+    Sort-Object -Property Name |
+    Select-Object -ExpandProperty Name
 
 # A package is stale when its newest source file is newer than the wheel built
 # for it (or when it has never been built). That is the rule a build system uses,
 # and unlike `git status` it does not care whether the work has been committed.
-$ignoredPaths = '[\\/](build|dist|bazel-[^\\/]+|__pycache__|\.pytest_cache|\.mypy_cache)[\\/]|\.egg-info'
+$ignoredPaths = '[\\/](build|dist|target|bazel-[^\\/]+|__pycache__|\.pytest_cache|\.mypy_cache)[\\/]|\.egg-info'
 
 function Get-NewestSourceFile {
     param([string]$Path)

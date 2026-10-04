@@ -6,6 +6,7 @@ __pycache__/
 # Build outputs (wheel/sdist of the panels)
 dist/
 build/
+target/
 *.egg-info/
 
 # Bazel's convenience symlinks and its local caches
