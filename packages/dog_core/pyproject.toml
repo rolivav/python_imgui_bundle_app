@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 dependencies = []
 
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11>=2.13"]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.2"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
@@ -15,9 +15,9 @@ minimum-version = "build-system.requires"
 wheel.packages = ["src/dog_core"]
 
 [tool.uv]
-# Rebuild the C++ core only when its native sources or the build configuration
-# change - not on every sync. Pure-Python panels are editable and need no such
-# keys (their edits never recompile anything).
+# Only relevant if something consumes this project as a path source: recompile
+# the core only when its native sources or the build configuration change, not on
+# every sync. The application consumes the prebuilt wheel instead.
 cache-keys = [
     { file = "pyproject.toml" },
     { file = "CMakeLists.txt" },

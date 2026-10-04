@@ -43,6 +43,10 @@ foreach ($project in $Packages) {
         throw "No such package folder: $source"
     }
     Write-Host "Building $project"
+    # A wheel that was installed from here can briefly be held open by the OS,
+    # which would make the build fail while writing it.
+    Get-ChildItem -LiteralPath $buildDir -File -Filter "$project-*" -ErrorAction SilentlyContinue |
+        Remove-Item -Force -ErrorAction SilentlyContinue
     uv build --out-dir $buildDir $source
     if ($LASTEXITCODE -ne 0) {
         throw "uv build failed for $project"

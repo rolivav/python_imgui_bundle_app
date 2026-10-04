@@ -29,7 +29,7 @@ built locally only while developing it (see the repository README).
 
 ## Build requirements
 
-Building the wheel needs CMake, a C++17 compiler and pybind11 (installed
+Building the wheel needs CMake, a C++17 compiler and nanobind (installed
 automatically in the build environment) — and nothing else: the HTTP client
 invokes the `curl` command line tool at runtime instead of linking a library.
 `curl` ships with Windows 10+ and with macOS; on Linux install it with your

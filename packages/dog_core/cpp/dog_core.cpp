@@ -8,7 +8,8 @@
 // The GIL is released while the network I/O is in flight, so the caller may run
 // this from a worker thread without stalling the GUI.
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>  // nanobind requires the STL headers explicitly
 
 #include <nlohmann/json.hpp>
 
@@ -19,7 +20,7 @@
 
 #include "http.hpp"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 using json = nlohmann::json;
 
 namespace {
@@ -72,13 +73,13 @@ std::string breed_from_image_url(const std::string& url) {
 }  // namespace
 
 // Returns (image_bytes, breed, image_url).
-py::tuple fetch_random_dog() {
+nb::tuple fetch_random_dog() {
     std::string image_bytes;
     std::string breed;
     std::string image_url;
 
     {
-        py::gil_scoped_release release;  // the network I/O never touches Python
+        nb::gil_scoped_release release;  // the network I/O never touches Python
 
         json payload;
         try {
@@ -98,10 +99,10 @@ py::tuple fetch_random_dog() {
         breed = breed_from_image_url(image_url);
     }
 
-    return py::make_tuple(py::bytes(image_bytes), breed, image_url);
+    return nb::make_tuple(nb::bytes(image_bytes.data(), image_bytes.size()), breed, image_url);
 }
 
-PYBIND11_MODULE(_dog_core, module) {
+NB_MODULE(_dog_core, module) {
     module.doc() = "Native image procurement for the Dog panel (HTTP + JSON in C++).";
     module.def("fetch_random_dog", &fetch_random_dog,
                "Fetch a random dog picture.\n\n"

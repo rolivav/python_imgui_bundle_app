@@ -95,6 +95,10 @@ if ($None) {
 } else {
     foreach ($item in $rebuild) {
         Write-Host "dev: rebuilding $($item.Folder) - $($item.Reason)" -ForegroundColor DarkGray
+        # A wheel that was just installed from here can briefly be held open by
+        # the OS, which would make the build fail while writing it.
+        Get-ChildItem -LiteralPath $buildDir -File -Filter "$($item.Folder)-*" -ErrorAction SilentlyContinue |
+            Remove-Item -Force -ErrorAction SilentlyContinue
         & uv build --wheel --out-dir $buildDir (Join-Path $repoRoot "packages/$($item.Folder)")
         if ($LASTEXITCODE -ne 0) { throw "uv build failed for $($item.Folder)" }
     }
