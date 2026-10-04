@@ -11,9 +11,9 @@ resolution-markers = [
 name = "bird-core"
 version = "0.1.0"
 source = { registry = "http://127.0.0.1:8080/simple" }
-sdist = { url = "http://127.0.0.1:8080/packages/bird_core-0.1.0.tar.gz", hash = "sha256:53cf759f06aa9392c76d2a41d45ab13d61eda2b83a3e4c3c4f2d3eb946e57456" }
+sdist = { url = "http://127.0.0.1:8080/packages/bird_core-0.1.0.tar.gz", hash = "sha256:04b00907835999325a42fbdf7da400993291961366105fc6c7f3336fd4b461a2" }
 wheels = [
-    { url = "http://127.0.0.1:8080/packages/bird_core-0.1.0-cp310-abi3-win_amd64.whl", hash = "sha256:c8c2acd2eb4e1a147333ef57390a9c7c6410be0957e94fe5d37e8f9c61256147" },
+    { url = "http://127.0.0.1:8080/packages/bird_core-0.1.0-cp310-abi3-win_amd64.whl", hash = "sha256:6e76e1f3918a4bf9267816b4680002b58461e9ea9a14abc64ca8607495d63a00" },
 ]
 
 [[package]]
@@ -28,32 +28,9 @@ dependencies = [
     { name = "numpy", version = "2.5.3", source = { registry = "http://127.0.0.1:8080/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pillow" },
 ]
-sdist = { url = "http://127.0.0.1:8080/packages/bird_panel-0.1.0.tar.gz", hash = "sha256:39d79bfe45c4272119a787c6013461e7d972467e5a1240e901ba223913e3d856" }
+sdist = { url = "http://127.0.0.1:8080/packages/bird_panel-0.1.0.tar.gz", hash = "sha256:33aeed4f5b9e95949af7f25bbbd5611049854a3c7a5300139d1ba1826b022be1" }
 wheels = [
-    { url = "http://127.0.0.1:8080/packages/bird_panel-0.1.0-py3-none-any.whl", hash = "sha256:b5dc93353b0b2df71261ea51c12bc17df1ecae35b38702c507205dd2bea591d4" },
-]
-
-[[package]]
-name = "cat-gifs"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "bird-core" },
-    { name = "bird-panel" },
-    { name = "cat-panel" },
-    { name = "dog-core" },
-    { name = "dog-panel" },
-    { name = "imgui-bundle" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "bird-core" },
-    { name = "bird-panel" },
-    { name = "cat-panel" },
-    { name = "dog-core" },
-    { name = "dog-panel" },
-    { name = "imgui-bundle", specifier = ">=1.92.900" },
+    { url = "http://127.0.0.1:8080/packages/bird_panel-0.1.0-py3-none-any.whl", hash = "sha256:e83bd1026b59790c81fe41fb041561cef594547733185d5555503a75362289d7" },
 ]
 
 [[package]]
@@ -68,9 +45,9 @@ dependencies = [
     { name = "pillow" },
     { name = "requests" },
 ]
-sdist = { url = "http://127.0.0.1:8080/packages/cat_panel-0.1.0.tar.gz", hash = "sha256:29f85b759828a3aaef43cdf17612ee0837afeef8cd27016d908f865b5f25fc07" }
+sdist = { url = "http://127.0.0.1:8080/packages/cat_panel-0.1.0.tar.gz", hash = "sha256:e36d48fbc380a474674fe1326c0756657ca9da4391bf561a299d7e9ae0621da1" }
 wheels = [
-    { url = "http://127.0.0.1:8080/packages/cat_panel-0.1.0-py3-none-any.whl", hash = "sha256:856227a691e3955bc0d789b8198c4715b33ab7cc39a1452c2baa2bda03c003a4" },
+    { url = "http://127.0.0.1:8080/packages/cat_panel-0.1.0-py3-none-any.whl", hash = "sha256:e141f4633a39f8e0a04409d6e081c4054fe8226a7e644c09757e4daf2b4aad0f" },
 ]
 
 [[package]]
@@ -249,9 +226,9 @@ wheels = [
 name = "dog-core"
 version = "0.1.0"
 source = { registry = "http://127.0.0.1:8080/simple" }
-sdist = { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0.tar.gz", hash = "sha256:07248412100b7c329827143faed3123b742002f3de5f7ff135e0141aea6b293f" }
+sdist = { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0.tar.gz", hash = "sha256:7aaef0e461d5a9ae083bfebcaf556c7683f8a53016d9a4ac9cfe9e2a505d810a" }
 wheels = [
-    { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:512d67fff8fcd71ef8d75d882bf20f91ec283d2da122b5ce59d2981896032f27" },
+    { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:688ade492f6b6f30894b50f6f9f81943292dc0e641d0bc9daf5b0ab76df530b5" },
 ]
 
 [[package]]
@@ -266,9 +243,9 @@ dependencies = [
     { name = "numpy", version = "2.5.3", source = { registry = "http://127.0.0.1:8080/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pillow" },
 ]
-sdist = { url = "http://127.0.0.1:8080/packages/dog_panel-0.1.0.tar.gz", hash = "sha256:6844ebab08e32ef33d766b77a8c25d15072bb97f2938db31f92acc09a7fbe1e6" }
+sdist = { url = "http://127.0.0.1:8080/packages/dog_panel-0.1.0.tar.gz", hash = "sha256:439501148a0faa53e4454b9cf0c978982c2e1fd543d14819197fb5ead7e49c55" }
 wheels = [
-    { url = "http://127.0.0.1:8080/packages/dog_panel-0.1.0-py3-none-any.whl", hash = "sha256:3a7307ca09f4068227f14304962535e25e09b580c6697587e4550e19b4008ad8" },
+    { url = "http://127.0.0.1:8080/packages/dog_panel-0.1.0-py3-none-any.whl", hash = "sha256:ff670a56cfcf1d00d6e99fa723a25b13c19e26e3b58b0976f95bb80ff452104d" },
 ]
 
 [[package]]
@@ -656,4 +633,27 @@ source = { registry = "http://127.0.0.1:8080/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e3/05/b17359e1cefb4f909b5e40b1b90a496d987258916dbbf88e842c729f510e/urllib3-2.8.0.tar.gz", hash = "sha256:63bf2ead4c879426ebf22ef2a781eeb4aa3b4ae798a0435506f8687fd5bb9b63", size = 458972, upload-time = "2026-09-15T19:29:36.253Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl", hash = "sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3", size = 135717, upload-time = "2026-09-15T19:29:34.577Z" },
+]
+
+[[package]]
+name = "zoo-app"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "bird-core" },
+    { name = "bird-panel" },
+    { name = "cat-panel" },
+    { name = "dog-core" },
+    { name = "dog-panel" },
+    { name = "imgui-bundle" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "bird-core" },
+    { name = "bird-panel" },
+    { name = "cat-panel" },
+    { name = "dog-core" },
+    { name = "dog-panel" },
+    { name = "imgui-bundle", specifier = ">=1.92.900" },
 ]

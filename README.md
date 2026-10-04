@@ -1,4 +1,4 @@
-# Cat GIFs
+# Zoo App
 
 A small [Dear ImGui Bundle](https://imgui-bundle.pages.dev/) application whose
 frontend is ImGui. It ships with three panels:
@@ -41,7 +41,7 @@ credit to *Maxi Aditya Kusuma Winarjo*, and no commercial use without permission
 ## Run
 
 ```bash
-uv run cat-gifs
+uv run zoo-app
 ```
 
 `uv` creates the virtual environment, installs the dependencies and runs the
@@ -50,8 +50,8 @@ app in one step. The panels and the native core are resolved as described under
 invocations:
 
 ```bash
-uv run python -m cat_gifs
-uv sync && uv run cat-gifs
+uv run python -m zoo_app
+uv sync && uv run zoo-app
 ```
 
 ## Project layout
@@ -63,7 +63,7 @@ panels and the native cores, each one its own project (see below).
 .
 ├── pyproject.toml                    # the app: depends on the panels + the native core
 ├── tools/                            # ./tools/dev.cmd and the local test index
-├── src/cat_gifs/
+├── src/zoo_app/
 │   ├── app.py                        # window + main loop, draws every registered panel
 │   └── panels/
 │       └── __init__.py               # panel contract + registry (add new panels here)
@@ -118,10 +118,10 @@ one in a `hello_imgui.DockableWindow`, and hello_imgui calls
 
 ### Panels and the native core are separate distributions
 
-`cat-panel`, `dog-panel` and `dog-core` (the native C++ core that procures the
-dog pictures) are declared in the app's dependencies and resolve like any other
-dependency — as wheels from the package index — so `uv run cat-gifs` downloads
-them and compiles nothing.
+`cat-panel`, `dog-panel`, `bird-panel`, `dog-core` and `bird-core` (the native
+cores that procure the pictures) are declared in the app's dependencies and
+resolve like any other dependency — as wheels from the package index — so
+`uv run zoo-app` downloads them and compiles nothing.
 
 There is deliberately no "install the workspace folder instead" source for them:
 uv needs a single source per package version, and because these packages are also
@@ -145,16 +145,16 @@ the wheel, so nothing is compiled).
 To add another panel, copy `packages/dog_panel/` (it needs `imgui_bundle`,
 `numpy` and `Pillow`, plus the native core if its work is heavy), give the new
 class a unique `label`, add the distribution to the app's dependencies, and
-register the class in `src/cat_gifs/panels/__init__.py` (`PANEL_TYPES`).
+register the class in `src/zoo_app/panels/__init__.py` (`PANEL_TYPES`).
 
 ### Developing a wheel locally
 
-Nothing is compiled by `uv run cat-gifs`. When you edit a package under
+Nothing is compiled by `uv run zoo-app`. When you edit a package under
 `packages/`, rebuild its wheel and let uv pick it up:
 
 ```powershell
 ./tools/dev.cmd                       # rebuild the packages whose sources changed
-./tools/dev.cmd -All                  # rebuild all three
+./tools/dev.cmd -All                  # rebuild all of them
 ./tools/dev.cmd -None                 # rebuild nothing, just run
 ./tools/dev.cmd -Command python       # same, for another uv-run command
 ```
@@ -176,7 +176,7 @@ at the same time does not put either of them back on its published wheel.
 Untouched packages have no local build, so editing `cat_panel` never recompiles
 `dog_core` — the C++ core is only built when its own sources change.
 
-Going back to the published wheels is just `uv run cat-gifs`: it syncs the
+Going back to the published wheels is just `uv run zoo-app`: it syncs the
 environment back to `uv.lock`. The scripts in `tools/local_index/` answer a
 different question — what a *consumer* sees when your wheel is published to and
 installed from an index.
@@ -188,7 +188,7 @@ so the "publish a wheel, then install it from an index" loop can be exercised
 without a real server:
 
 The package index in `pyproject.toml` points at this server
-(`http://127.0.0.1:8080/simple`), so once it is running, `uv run cat-gifs` gets
+(`http://127.0.0.1:8080/simple`), so once it is running, `uv run zoo-app` gets
 the wheels from it:
 
 ```powershell
@@ -202,7 +202,7 @@ the wheels from it:
 #    build). For edits under packages/ use ./tools/dev.cmd instead - it builds
 #    and installs them locally without touching the index.
 uv sync
-uv run cat-gifs
+uv run zoo-app
 ```
 
 The `.cmd` files are thin wrappers that run the `.ps1` scripts with
@@ -229,9 +229,9 @@ in `MainDockSpace`:
 - the **View** menu of the menu bar (`show_menu_bar`) lists the panels and can
   restore the default layout, the escape hatch if a panel is closed or lost;
 - the window geometry, the dock layout and the panel visibility are stored by
-  hello_imgui in `python_imgui_settings.ini` (see `runner_params.ini_filename`;
-  it is written in the working directory by default), which is why `.gitignore`
-  ignores `*.ini`. Delete it to fall back to the default layout.
+  hello_imgui in `zoo_app_settings.ini` (see `runner_params.ini_filename`; it is
+  written in the working directory by default), which is why `.gitignore` ignores
+  `*.ini`. Delete it to fall back to the default layout.
 
 Multi-viewports are enabled (`enable_viewports`), so a panel can be detached
 into its own native window and moved to another monitor: drag its tab out of the

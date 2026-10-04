@@ -1,4 +1,4 @@
-"""Allow running the app with ``python -m cat_gifs``."""
+"""Allow running the app with ``python -m zoo_app``."""
 
 from .app import main
 

@@ -1,6 +1,6 @@
 # cat-panel
 
-The **Cat** panel of the *Cat GIFs* application, packaged on its own so that the
+The **Cat** panel of the *Zoo App* application, packaged on its own so that the
 application depends on it the same way it depends on any other distribution.
 
 A panel is a self-contained piece of ImGui UI. It exposes exactly two things:

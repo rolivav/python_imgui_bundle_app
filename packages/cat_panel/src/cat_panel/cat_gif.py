@@ -72,7 +72,7 @@ def fetch_random_cat_gif(url: str = RANDOM_CAT_GIF_URL) -> CatGif:
     response = requests.get(
         url,
         timeout=REQUEST_TIMEOUT_S,
-        headers={"User-Agent": "cat-gifs-imgui-bundle-app/1.0"},
+        headers={"User-Agent": "zoo-app-imgui-bundle/1.0"},
     )
     response.raise_for_status()
     return decode_gif(response.content)

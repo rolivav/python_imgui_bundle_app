@@ -20,7 +20,7 @@ wheels from it.
 
 # 3. In another terminal, fetch the wheels from the index.
 uv sync
-uv run cat-gifs
+uv run zoo-app
 ```
 
 The `.cmd` files are thin wrappers that run the `.ps1` scripts with
@@ -58,7 +58,7 @@ that index:
 ./tools/local_index/publish.cmd    # build wheel + sdist into packages/
 ./tools/local_index/serve.cmd      # serve them on 127.0.0.1:8080
 uv lock --refresh-package cat_panel
-uv run --reinstall-package cat_panel cat-gifs
+uv run --reinstall-package cat_panel zoo-app
 ```
 
 The last two commands are needed because a rebuilt artifact keeps its version but

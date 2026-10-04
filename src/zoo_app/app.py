@@ -73,7 +73,7 @@ def main() -> None:
         )
 
     runner_params = immapp.RunnerParams()
-    runner_params.app_window_params.window_title = "Cat GIFs"
+    runner_params.app_window_params.window_title = "Zoo App"
     runner_params.app_window_params.window_geometry.size = (900, 700)
 
     # Keep drawing while the user drags a window border (see REPAINT_DURING_RESIZE).
@@ -82,10 +82,11 @@ def main() -> None:
     )
 
     # Name of the settings file (window geometry, dock layout, panel
-    # visibility). It is written inside `ini_folder_type` - the working
-    # directory by default - and takes precedence over the name that is
-    # otherwise derived from the window title.
-    runner_params.ini_filename = "python_imgui_settings.ini"
+    # visibility), written inside `ini_folder_type` - the working directory by
+    # default. Setting it explicitly takes precedence over the name that is
+    # otherwise derived from the window title. That is why `.gitignore` ignores
+    # `*.ini`.
+    runner_params.ini_filename = "zoo_app_settings.ini"
 
     # Docking: hello_imgui provides a full screen dock space, and every panel is
     # a dockable window inside it. With one panel, "MainDockSpace" covers the

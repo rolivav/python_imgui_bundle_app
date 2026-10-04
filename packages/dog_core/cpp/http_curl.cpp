@@ -25,7 +25,7 @@
 namespace dog_core {
 namespace {
 
-constexpr char kUserAgent[] = "cat-gifs-imgui-bundle-app/1.0";
+constexpr char kUserAgent[] = "zoo-app-imgui-bundle/1.0";
 constexpr int kTimeoutSeconds = 15;
 
 // curl runs through a shell (cmd.exe / sh), so the URL must not be able to break

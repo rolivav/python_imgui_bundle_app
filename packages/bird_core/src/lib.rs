@@ -68,7 +68,7 @@ fn http_get(url: &str) -> Result<Vec<u8>, String> {
             "--max-time",
             &timeout,
             "--user-agent",
-            "cat-gifs-imgui-bundle-app/1.0 (educational ImGui demo)",
+            "zoo-app-imgui-bundle/1.0 (educational ImGui demo)",
         ])
         .arg(url)
         .stdout(Stdio::piped())

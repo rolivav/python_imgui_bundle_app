@@ -3,7 +3,7 @@
 Rebuild the packages you changed, then run the app.
 
 .DESCRIPTION
-`uv run cat-gifs` always runs the published wheels. This wrapper rebuilds the
+`uv run zoo-app` always runs the published wheels. This wrapper rebuilds the
 wheel of every package under `packages/` whose sources are newer than the wheel
 built for it, installs every package that has a current local build into the
 project environment, and then starts the command without syncing, so those builds
@@ -15,16 +15,13 @@ edited is rebuilt, so only a changed C++ core costs compile time; packages with
 no local build keep their published wheel.
 
 The environment is not synced - dependencies are `uv sync`'s business. Going back
-to the published wheels is `uv run cat-gifs`, which syncs. Use -Verbose to see
+to the published wheels is `uv run zoo-app`, which syncs. Use -Verbose to see
 uv's own output for the install.
-
-Going back to the published wheels is just `uv run cat-gifs`: it syncs the
-environment back to `uv.lock`.
 
 Parameters:
   -All       rebuild every package, changed or not
   -None      rebuild nothing - just run what is installed
-  -Command   the command to run (default: cat-gifs)
+  -Command   the command to run (default: zoo-app)
 
 Examples:
   .\tools\dev.cmd
@@ -36,7 +33,7 @@ Examples:
 param(
     [switch]$All,
     [switch]$None,
-    [string]$Command = "cat-gifs"
+    [string]$Command = "zoo-app"
 )
 
 $ErrorActionPreference = "Stop"
@@ -157,7 +154,7 @@ if ($None) {
     }
 }
 
-# --no-sync keeps whatever is installed in place. A plain `uv run cat-gifs`
+# --no-sync keeps whatever is installed in place. A plain `uv run zoo-app`
 # syncs the environment back to the published wheels.
 $runArgs = @()
 if ($None -or $local.Count -gt 0) { $runArgs += "--no-sync" }
