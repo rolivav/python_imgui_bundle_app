@@ -41,7 +41,7 @@ class DogPanel:
     """The "Dog" panel: a random dog picture with a "Get Dog" button."""
 
     #: Title of the panel's dockable window (also the label of its tab).
-    label: str = "Dog"
+    label: str = "Dog (C++)"
 
     def __init__(self) -> None:
         self._picture: Union[DogPicture, None] = None

@@ -47,7 +47,7 @@ class CatPanel:
     """The "Cat" panel: a random animated cat GIF with a "Get Cat" button."""
 
     #: Title of the panel's dockable window (also the label of its tab).
-    label: str = "Cat"
+    label: str = "Cat (Python)"
 
     def __init__(self) -> None:
         self._cat: Union[CatGif, None] = None

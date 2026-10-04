@@ -41,7 +41,7 @@ class BirdPanel:
     """The "Bird" panel: a random bird picture with a "Get Bird" button."""
 
     #: Title of the panel's dockable window (also the label of its tab).
-    label: str = "Bird"
+    label: str = "Bird (Rust)"
 
     def __init__(self) -> None:
         self._picture: Union[BirdPicture, None] = None
