@@ -2,3 +2,11 @@ __pycache__/
 *.py[cod]
 .venv/
 *.ini
+
+# Build outputs (wheel/sdist of the panels)
+dist/
+build/
+*.egg-info/
+
+# Local test index's served packages (tools/local_index)
+tools/local_index/packages/

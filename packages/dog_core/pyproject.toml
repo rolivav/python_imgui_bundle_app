@@ -1,0 +1,27 @@
+[project]
+name = "dog-core"
+version = "0.1.0"
+description = "Native (C++) image procurement core for the Dog panel"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+wheel.packages = ["src/dog_core"]
+
+[tool.uv]
+# Rebuild the C++ core only when its native sources or the build configuration
+# change - not on every sync. Pure-Python panels are editable and need no such
+# keys (their edits never recompile anything).
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "CMakeLists.txt" },
+    { file = "**/*.cpp" },
+    { file = "**/*.hpp" },
+    { file = "**/*.h" },
+]

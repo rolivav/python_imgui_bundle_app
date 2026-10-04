@@ -3,11 +3,11 @@
 * logic: :class:`CatPanel` downloads in a background thread (so the GUI never
   freezes), uploads the frames to the GPU once they arrive, and advances the
   current frame according to each frame's duration.
-* ui:    :meth:`CatPanel.draw` renders the "Cat" window and its "Get Cat"
+* ui:    :meth:`CatPanel.draw` renders the panel content and its "Get Cat"
   button.
 
 The model (``CatGif`` and the functions that build it) lives in
-:mod:`cat_gifs.panels.cat_panel.cat_gif`.
+:mod:`cat_panel.cat_gif`.
 """
 
 from __future__ import annotations
@@ -124,10 +124,10 @@ class CatPanel:
     def draw(self) -> None:
         """Draw the panel content (called once per frame, on the GUI thread).
 
-        The panel does not open a window itself: it is registered as a dockable
-        window, so hello_imgui calls ``imgui.begin()``/``imgui.end()`` around
-        this method (see ``app.py``). The content therefore fills whatever space
-        the dock layout grants the panel.
+        The panel does not open a window itself: the host application registers
+        it as a dockable window, so hello_imgui calls ``imgui.begin()`` /
+        ``imgui.end()`` around this method. The content therefore fills whatever
+        space the dock layout grants the panel.
         """
         self._collect_download()
         self._advance_animation()

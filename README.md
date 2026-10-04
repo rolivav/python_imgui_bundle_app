@@ -1,11 +1,15 @@
 # Cat GIFs
 
 A small [Dear ImGui Bundle](https://imgui-bundle.pages.dev/) application whose
-frontend is ImGui. It contains a single panel, **Cat**, which displays a random
-animated cat GIF fetched from [cataas.com](https://cataas.com/).
+frontend is ImGui. It ships with two panels:
 
-When the panel is first shown it fetches a random cat; the **Get Cat** button
-fetches a new random one.
+- **Cat**, which displays a random animated cat GIF fetched from
+  [cataas.com](https://cataas.com/);
+- **Dog**, which displays a random dog picture fetched from
+  [dog.ceo](https://dog.ceo/dog-api/).
+
+When a panel is first shown it fetches a random picture; its **Get Cat** /
+**Get Dog** button fetches a new one.
 
 Panels are dockable windows inside a full screen dock space, so the panel fills
 the whole window on its own, and upcoming panels will share that space (tabs,
@@ -15,6 +19,13 @@ splits, freely rearranged by the user).
 
 - [uv](https://docs.astral.sh/uv/) (Python 3.10+ is installed automatically by uv if needed)
 
+Building the native core (`dog-core`) needs a C++17 compiler and CMake, because
+the panels and the core are installed from `packages/`. The HTTP client shells
+out to the `curl` command line tool, so no library has to be linked or installed
+on Windows (curl ships with Windows 10+) or macOS; on Linux, install `curl` if it
+is missing. Consuming prebuilt wheels instead (see "Testing the wheel workflow
+with a local index") needs none of that.
+
 ## Run
 
 ```bash
@@ -22,7 +33,9 @@ uv run cat-gifs
 ```
 
 `uv` creates the virtual environment, installs the dependencies and runs the
-app in one step. Equivalent invocations:
+app in one step. The panels and the native core are resolved as described under
+"Panels and the native core are separate distributions" below. Equivalent
+invocations:
 
 ```bash
 uv run python -m cat_gifs
@@ -31,20 +44,41 @@ uv sync && uv run cat-gifs
 
 ## Project layout
 
+Two projects: the application, and the panel it displays (panels are separate
+distributions, see below).
+
 ```
-src/cat_gifs/
-├── app.py                      # window + main loop, draws every registered panel
-└── panels/
-    ├── __init__.py             # panel registry (add new panels here)
-    └── cat_panel/              # the "Cat" panel
-        ├── __init__.py         # public API of the panel
-        ├── cat_gif.py          # model
-        └── cat_panel.py        # logic + UI
+.
+├── pyproject.toml                    # the app: depends on the panels + the native core
+├── tools/                            # ./tools/dev.cmd and the local test index
+├── src/cat_gifs/
+│   ├── app.py                        # window + main loop, draws every registered panel
+│   └── panels/
+│       └── __init__.py               # panel contract + registry (add new panels here)
+└── packages/
+    ├── cat_panel/                    # the "Cat" panel, as its own project
+    │   ├── pyproject.toml            # distribution `cat-panel`
+    │   └── src/cat_panel/
+    │       ├── __init__.py           # public API of the panel
+    │       ├── cat_gif.py            # model
+    │       └── cat_panel.py          # logic + UI
+    ├── dog_panel/                    # the "Dog" panel, as its own project
+    │   ├── pyproject.toml            # distribution `dog-panel`
+    │   └── src/dog_panel/
+    │       ├── __init__.py           # public API of the panel
+    │       ├── dog.py                # model (decode + call the native core)
+    │       └── dog_panel.py          # logic + UI
+    └── dog_core/                     # the native (C++) image-procurement core
+        ├── pyproject.toml            # distribution `dog-core` (scikit-build-core)
+        ├── CMakeLists.txt
+        ├── cpp/dog_core.cpp          # HTTP + JSON in C++
+        └── src/dog_core/__init__.py  # Python wrapper
 ```
 
 ### Panels are self-contained
 
-Each panel owns its model, its logic and its UI, inside its own package:
+Every panel owns its model, its logic and its UI, and is packaged as its own
+distribution — the app depends on it like on any other library:
 
 | Part  | File           | Contents                                                                                      |
 |-------|----------------|-----------------------------------------------------------------------------------------------|
@@ -57,9 +91,101 @@ A panel exposes just `label` (the title of its dockable window) and `draw()`
 one in a `hello_imgui.DockableWindow`, and hello_imgui calls
 `imgui.begin()`/`imgui.end()` around it. That is what makes them dockable.
 
-To add another panel, copy the `cat_panel/` folder, give the new class a unique
-`label`, and register it in `panels/__init__.py` (`PANEL_TYPES`). Nothing else
-in the app needs to change.
+### Panels and the native core are separate distributions
+
+`cat-panel`, `dog-panel` and `dog-core` (the native C++ core that procures the
+dog pictures) are declared in the app's dependencies and resolve like any other
+dependency — as wheels from the package index — so `uv run cat-gifs` downloads
+them and compiles nothing.
+
+There is deliberately no "install the workspace folder instead" source for them:
+uv needs a single source per package version, and because these packages are also
+plain dependencies, a `[tool.uv.sources]` path source — even one gated behind an
+`extra` — also wins for the default install, which would compile the C++ core on
+every machine. Working on a package therefore means rebuilding its wheel, which
+`tools/dev.cmd` does for the packages you changed (see below).
+
+To build and upload a wheel yourself:
+
+```bash
+uv build --out-dir dist packages/dog_core   # wheel + sdist
+uv publish --index internal dist/*          # upload it to the package index
+```
+
+Publishing the sdist matters for `dog-core`: its wheel only matches one Python
+version, and uv needs the sdist to resolve the project for the other versions
+allowed by `requires-python` (installing on the matching interpreter still uses
+the wheel, so nothing is compiled).
+
+To add another panel, copy `packages/dog_panel/` (it needs `imgui_bundle`,
+`numpy` and `Pillow`, plus the native core if its work is heavy), give the new
+class a unique `label`, add the distribution to the app's dependencies, and
+register the class in `src/cat_gifs/panels/__init__.py` (`PANEL_TYPES`).
+
+### Developing a wheel locally
+
+Nothing is compiled by `uv run cat-gifs`. When you edit a package under
+`packages/`, rebuild its wheel and let uv pick it up:
+
+```powershell
+./tools/dev.cmd                       # rebuild the packages whose sources changed
+./tools/dev.cmd -All                  # rebuild all three
+./tools/dev.cmd -None                 # rebuild nothing, just run
+./tools/dev.cmd -Command python       # same, for another uv-run command
+```
+
+`dev.cmd` builds the wheel of each stale package into `dist/`, runs `uv sync` (so
+the rest of the environment matches `uv.lock`) and then installs those wheels
+into the project environment with `uv pip install --no-deps --reinstall`.
+Nothing is uploaded and no index is involved: the built wheels never leave the
+machine and `uv.lock` is untouched. The app is started with `uv run --no-sync`,
+which keeps those local wheels in place.
+
+A package is stale when its sources are newer than the wheel built for it, so the
+decision does not depend on your git state (a brand-new package counts as stale,
+which is what you want). Untouched packages keep their published wheels, so
+editing `cat_panel` never recompiles `dog_core` — the C++ core is only built when
+its own sources change.
+
+Going back to the published wheels is just `uv run cat-gifs`: it syncs the
+environment back to `uv.lock`. The scripts in `tools/local_index/` answer a
+different question — what a *consumer* sees when your wheel is published to and
+installed from an index.
+
+### Testing the wheel workflow with a local index
+
+`tools/local_index/` runs a throwaway [pypiserver](https://github.com/pypiserver/pypiserver)
+so the "publish a wheel, then install it from an index" loop can be exercised
+without a real server:
+
+The package index in `pyproject.toml` points at this server
+(`http://127.0.0.1:8080/simple`), so once it is running, `uv run cat-gifs` gets
+the wheels from it:
+
+```powershell
+# 1. build the panels and the native core into the served folder
+./tools/local_index/publish.cmd
+
+# 2. serve them on http://127.0.0.1:8080 (leave running; Ctrl+C to stop)
+./tools/local_index/serve.cmd
+
+# 3. in another terminal: uv now resolves the wheels from the index (no local
+#    build). For edits under packages/ use ./tools/dev.cmd instead - it builds
+#    and installs them locally without touching the index.
+uv sync
+uv run cat-gifs
+```
+
+The `.cmd` files are thin wrappers that run the `.ps1` scripts with
+`-ExecutionPolicy Bypass`, so Windows' default policy (which blocks unsigned
+scripts) does not get in the way; run the `.ps1` files directly if your policy
+already allows unsigned scripts. `publish.cmd` builds each distribution with
+`uv build` (a wheel and a sdist) straight into the directory the server serves,
+so a rebuilt artifact replaces the published one on the next request (the server
+is started with `-o`, which allows overwriting the same version), and
+`tools/dev.cmd` uses the same scripts to republish just the packages you changed.
+The server is bound to `127.0.0.1` and runs without authentication: it is a local
+test aid only. See `tools/local_index/README.md`.
 
 ### Docking
 

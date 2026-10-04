@@ -6,9 +6,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "imgui-bundle>=1.92.900",
-    "numpy>=1.24",
-    "pillow>=10.0",
-    "requests>=2.31",
+    "cat-panel",
+    "dog-panel",
+    "dog-core",
 ]
 
 [project.scripts]
@@ -20,3 +20,25 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cat_gifs"]
+
+# Where the panels and the native core come from.
+#
+# They are separate distributions, consumed as wheels from the index below, so
+# `uv run cat-gifs` downloads them and compiles nothing.
+#
+# Note that a `[tool.uv.sources]` path source cannot express "use the wheel
+# unless I am working on this package": these packages are also plain
+# dependencies, and uv needs a single source per package version, so a path
+# source - even one gated behind `extra = "..."` - wins for the default install
+# too and everything gets built locally. Local development therefore rebuilds
+# and republishes the wheel instead: `tools/dev.cmd` builds a fresh wheel for
+# every package with uncommitted changes into the served folder and re-syncs,
+# so only the package you touched is rebuilt - and only a changed C++ core
+# costs compile time.
+#
+# Point this at your package index. `tools/local_index/` serves a throwaway one
+# on this address for testing, and `uv publish --index internal` uploads to it.
+[[tool.uv.index]]
+name = "internal"
+url = "http://127.0.0.1:8080/simple"
+publish-url = "http://127.0.0.1:8080"
