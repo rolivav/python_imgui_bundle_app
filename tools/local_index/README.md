@@ -33,11 +33,14 @@ to `127.0.0.1:8080`, with authentication disabled and overwriting allowed, so
 rebuilding the same version during development works.
 
 `publish.ps1` doesn't upload over HTTP: it builds each distribution with
-`uv build` (wheel and sdist) directly into `tools/local_index/packages/`, which
-is the directory the server serves. The sdist is what lets uv resolve `dog-core`
-for the Python versions this machine did not build a wheel for; the wheel is
-still what gets installed here. If you prefer to exercise the upload path,
-pypiserver also accepts anonymous uploads:
+`uv build` (wheel and sdist) into `dist/` and copies the artifacts into
+`tools/local_index/packages/`, which is the directory the server serves. The
+sdist is what lets uv resolve `dog-core` for the Python versions this machine did
+not build a wheel for; the wheel is still what gets installed here. Since the
+wheels also land in `dist/`, publishing counts as a local build for
+`./tools/dev.cmd` — publish and edit nothing, and there is nothing to rebuild. If
+you prefer to exercise the upload path, pypiserver also accepts anonymous
+uploads:
 
 ```powershell
 uv publish --index internal packages/*

@@ -3,11 +3,14 @@
 Build the panels and the native core into the local index's package folder.
 
 .DESCRIPTION
-Runs `uv build` for each distribution and writes the artifacts into
-`tools/local_index/packages/`, the directory served by serve.ps1. That is enough
-to "publish": pypiserver picks the new files up on the next request. A rebuilt
-artifact replaces the previous one of the same version (serve.ps1 runs the
-server with `-o`, which allows overwriting).
+Runs `uv build` for each distribution into `dist/` and copies the artifacts
+(wheel and sdist) into `tools/local_index/packages/`, the directory served by
+serve.ps1. That is enough to "publish": pypiserver picks the new files up on the
+next request. A rebuilt artifact replaces the previous one of the same version
+(serve.ps1 runs the server with `-o`, which allows overwriting).
+
+Because the wheels land in `dist/`, publishing also counts as a local build for
+`tools/dev.cmd`: publish, then edit nothing, and there is nothing to rebuild.
 
 Both a wheel and a source distribution are built. The sdist matters for
 `dog-core`: its wheel only matches one Python version (`cp313` on this machine),
@@ -30,23 +33,31 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$buildDir = Join-Path $repoRoot "dist"
 $packagesDir = Join-Path $PSScriptRoot "packages"
 New-Item -ItemType Directory -Force -Path $packagesDir | Out-Null
 
 foreach ($project in $Packages) {
     $source = Join-Path $repoRoot "packages/$project"
-    if (-not (Test-Path $source)) {
+    if (-not (Test-Path -LiteralPath $source)) {
         throw "No such package folder: $source"
     }
     Write-Host "Building $project"
-    uv build --out-dir $packagesDir $source
+    uv build --out-dir $buildDir $source
     if ($LASTEXITCODE -ne 0) {
         throw "uv build failed for $project"
     }
+
+    $artifacts = Get-ChildItem -LiteralPath $buildDir -File |
+        Where-Object { $_.Name -like "$project-*" }
+    if (-not $artifacts) {
+        throw "uv build produced no artifacts for $project"
+    }
+    Copy-Item -LiteralPath $artifacts.FullName -Destination $packagesDir -Force
 }
 
 Write-Host ""
-Write-Host "Artifacts served from ${packagesDir}:"
+Write-Host "Published from ${buildDir} into ${packagesDir}:"
 Get-ChildItem -Path $packagesDir -File |
     Where-Object { $_.Name -match '\.(whl|tar\.gz)$' } |
     ForEach-Object { Write-Host "  $($_.Name)" }

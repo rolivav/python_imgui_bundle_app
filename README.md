@@ -134,18 +134,22 @@ Nothing is compiled by `uv run cat-gifs`. When you edit a package under
 ./tools/dev.cmd -Command python       # same, for another uv-run command
 ```
 
-`dev.cmd` builds the wheel of each stale package into `dist/`, runs `uv sync` (so
-the rest of the environment matches `uv.lock`) and then installs those wheels
-into the project environment with `uv pip install --no-deps --reinstall`.
-Nothing is uploaded and no index is involved: the built wheels never leave the
-machine and `uv.lock` is untouched. The app is started with `uv run --no-sync`,
-which keeps those local wheels in place.
+`dev.cmd` builds the wheel of each stale package into `dist/` and installs every
+package that has a current local build into the project environment with
+`uv pip install --no-deps --reinstall`. Nothing is uploaded and no index is
+involved: the built wheels never leave the machine and `uv.lock` is untouched.
+The app is then started with `uv run --no-sync`, which keeps those local wheels in
+place. Installation is cheap, idempotent and quiet (`-Verbose` shows uv's output),
+and dependencies are not dev.cmd's business: run `uv sync` after changing them.
+If you have no local builds at all, `dev.cmd` is just `uv run`.
 
 A package is stale when its sources are newer than the wheel built for it, so the
-decision does not depend on your git state (a brand-new package counts as stale,
-which is what you want). Untouched packages keep their published wheels, so
-editing `cat_panel` never recompiles `dog_core` — the C++ core is only built when
-its own sources change.
+decision does not depend on your git state; a package with no local build yet
+counts as stale (the first run therefore builds all three, once). Every package
+that has a current local build is then (re)installed, so working on two packages
+at the same time does not put either of them back on its published wheel.
+Untouched packages have no local build, so editing `cat_panel` never recompiles
+`dog_core` — the C++ core is only built when its own sources change.
 
 Going back to the published wheels is just `uv run cat-gifs`: it syncs the
 environment back to `uv.lock`. The scripts in `tools/local_index/` answer a
@@ -180,10 +184,10 @@ The `.cmd` files are thin wrappers that run the `.ps1` scripts with
 `-ExecutionPolicy Bypass`, so Windows' default policy (which blocks unsigned
 scripts) does not get in the way; run the `.ps1` files directly if your policy
 already allows unsigned scripts. `publish.cmd` builds each distribution with
-`uv build` (a wheel and a sdist) straight into the directory the server serves,
-so a rebuilt artifact replaces the published one on the next request (the server
-is started with `-o`, which allows overwriting the same version), and
-`tools/dev.cmd` uses the same scripts to republish just the packages you changed.
+`uv build` (a wheel and a sdist) into `dist/` and copies the artifacts into the
+directory the server serves, so a rebuilt artifact replaces the published one on
+the next request (the server is started with `-o`, which allows overwriting the
+same version), and publishing also counts as a local build for `tools/dev.cmd`.
 The server is bound to `127.0.0.1` and runs without authentication: it is a local
 test aid only. See `tools/local_index/README.md`.
 
