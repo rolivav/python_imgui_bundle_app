@@ -29,16 +29,37 @@ built locally only while developing it (see the repository README).
 
 ## Build requirements
 
-Building the wheel needs CMake, a C++17 compiler and nanobind (installed
-automatically in the build environment) — and nothing else: the HTTP client
-invokes the `curl` command line tool at runtime instead of linking a library.
-`curl` ships with Windows 10+ and with macOS; on Linux install it with your
-package manager if it is missing. `nlohmann/json` is used if already installed,
-otherwise it is fetched during the build.
+Building the wheel needs [Bazel](https://bazel.build/) — install
+[bazelisk](https://github.com/bazelbuild/bazelisk) and put it on `PATH`; it uses
+the version pinned in `.bazelversion` — plus a C++17 compiler. Everything else
+comes from the [Bazel Central Registry](https://registry.bazel.build/): nanobind
+(the binding layer) and `nlohmann/json`.
+
+The HTTP client invokes the `curl` command line tool at runtime instead of
+linking a library: `curl` ships with Windows 10+ and with macOS; on Linux install
+it with your package manager if it is missing.
 
 ```bash
 uv build     # from this folder: writes dist/dog_core-0.1.0-...whl
 ```
+
+`uv build` runs Bazel through a hatchling build hook (`hatch_build.py`), so the
+wheel workflow is the same as for the pure-Python panels. Bazel's caches are the
+reason for using it instead of CMake: rebuilding after editing one file only
+recompiles that file. To compile without packaging:
+
+```bash
+bazel build //:_dog_core      # -> bazel-bin/_dog_core.pyd
+```
+
+On Windows that needs CPython's import library on the linker's search path, since
+`pyconfig.h` asks MSVC for `python3xx.lib` by name:
+
+```powershell
+bazel build //:_dog_core --linkopt="/LIBPATH:<python>\libs"
+```
+
+(`uv build` adds that automatically, for the interpreter building the wheel.)
 
 ## Installing
 

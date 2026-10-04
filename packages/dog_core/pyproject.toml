@@ -7,12 +7,17 @@ requires-python = ">=3.10"
 dependencies = []
 
 [build-system]
-requires = ["scikit-build-core>=0.10", "nanobind>=2.2"]
-build-backend = "scikit_build_core.build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.scikit-build]
-minimum-version = "build-system.requires"
-wheel.packages = ["src/dog_core"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/dog_core"]
+
+# hatchling is the PEP 517 backend, so `uv build` and `uv publish` work as for the
+# pure-Python panels; the C++ part is compiled by Bazel from this hook (and the
+# sources are packed into the sdist from there).
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
 
 [tool.uv]
 # Only relevant if something consumes this project as a path source: recompile
@@ -20,7 +25,10 @@ wheel.packages = ["src/dog_core"]
 # every sync. The application consumes the prebuilt wheel instead.
 cache-keys = [
     { file = "pyproject.toml" },
-    { file = "CMakeLists.txt" },
+    { file = ".bazelversion" },
+    { file = "BUILD.bazel" },
+    { file = "MODULE.bazel" },
+    { file = "hatch_build.py" },
     { file = "**/*.cpp" },
     { file = "**/*.hpp" },
     { file = "**/*.h" },

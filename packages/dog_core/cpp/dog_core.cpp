@@ -7,6 +7,10 @@
 //
 // The GIL is released while the network I/O is in flight, so the caller may run
 // this from a worker thread without stalling the GUI.
+//
+// The two HTTP GETs are performed by the `curl` command line tool (see
+// http_curl.cpp) and the JSON is parsed with nlohmann/json, so no HTTP library is
+// linked into the extension.
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>  // nanobind requires the STL headers explicitly

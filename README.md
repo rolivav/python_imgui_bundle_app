@@ -19,12 +19,14 @@ splits, freely rearranged by the user).
 
 - [uv](https://docs.astral.sh/uv/) (Python 3.10+ is installed automatically by uv if needed)
 
-Building the native core (`dog-core`) needs a C++17 compiler and CMake, because
-the panels and the core are installed from `packages/`. The HTTP client shells
-out to the `curl` command line tool, so no library has to be linked or installed
-on Windows (curl ships with Windows 10+) or macOS; on Linux, install `curl` if it
-is missing. Consuming prebuilt wheels instead (see "Testing the wheel workflow
-with a local index") needs none of that.
+Building the native core (`dog-core`) needs a C++17 compiler and
+[Bazel](https://bazel.build/) (easiest through
+[bazelisk](https://github.com/bazelbuild/bazelisk), which follows the pinned
+`.bazelversion`); nanobind and `nlohmann/json` come from the Bazel Central
+Registry. The HTTP client shells out to the `curl` command line tool, so no HTTP
+library has to be linked or installed on Windows (curl ships with Windows 10+) or
+macOS; on Linux, install `curl` if it is missing. Consuming the prebuilt wheels
+instead (see "Testing the wheel workflow with a local index") needs none of that.
 
 ## Run
 
@@ -69,8 +71,10 @@ distributions, see below).
     │       ├── dog.py                # model (decode + call the native core)
     │       └── dog_panel.py          # logic + UI
     └── dog_core/                     # the native (C++) image-procurement core
-        ├── pyproject.toml            # distribution `dog-core` (scikit-build-core)
-        ├── CMakeLists.txt
+        ├── pyproject.toml            # distribution `dog-core` (hatchling + Bazel hook)
+        ├── BUILD.bazel               # one C++ library + the Python extension
+        ├── MODULE.bazel              # Bazel deps (nanobind, nlohmann/json)
+        ├── hatch_build.py            # compiles the extension with Bazel
         ├── cpp/dog_core.cpp          # HTTP + JSON in C++
         └── src/dog_core/__init__.py  # Python wrapper
 ```

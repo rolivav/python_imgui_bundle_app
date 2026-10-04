@@ -48,7 +48,7 @@ $packages = @("cat_panel", "dog_panel", "dog_core")
 # A package is stale when its newest source file is newer than the wheel built
 # for it (or when it has never been built). That is the rule a build system uses,
 # and unlike `git status` it does not care whether the work has been committed.
-$ignoredPaths = '[\\/](build|dist|__pycache__|\.pytest_cache|\.mypy_cache)[\\/]|\.egg-info'
+$ignoredPaths = '[\\/](build|dist|bazel-[^\\/]+|__pycache__|\.pytest_cache|\.mypy_cache)[\\/]|\.egg-info'
 
 function Get-NewestSourceFile {
     param([string]$Path)

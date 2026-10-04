@@ -1,0 +1,56 @@
+# The native core: one C++ library, plus the shared object Python imports.
+#
+# The library is compiled here; the HTTP client shells out to the `curl` command
+# line tool at runtime, so no HTTP library is linked. nlohmann/json parses the
+# dog.ceo response; it comes from the Bazel Central Registry.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_shared_library.bzl", "cc_shared_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "dog_core_impl",
+    srcs = [
+        "cpp/dog_core.cpp",
+        "cpp/http_curl.cpp",
+    ],
+    hdrs = ["cpp/http.hpp"],
+    copts = select({
+        # The BCR overlay defines NB_SHARED for its consumers, which makes
+        # nanobind's API __declspec(dllimport) and expects a nanobind DLL. This
+        # extension embeds nanobind instead (the static model), so drop it.
+        "@rules_cc//cc/compiler:msvc-cl": [
+            "/std:c++17",
+            "/EHsc",
+            "/UNB_SHARED",
+        ],
+        "//conditions:default": [
+            "-std=c++17",
+            "-UNB_SHARED",
+        ],
+    }),
+    includes = ["cpp"],
+    # CPython's pyconfig.h asks MSVC for python3xx.lib through a
+    # `#pragma comment(lib, ...)`, so on Windows the linker needs the directory
+    # that holds it: the build hook passes --linkopt=/LIBPATH:...
+    linkopts = select({
+        "@platforms//os:macos": ["-Wl,-undefined,dynamic_lookup"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        "@nanobind//:nanobind",
+        "@nlohmann_json//:json",
+    ],
+)
+
+# The shared library must be named exactly like the module declared by NB_MODULE,
+# so the build wheel can drop it in as dog_core/_dog_core.pyd (or .so).
+cc_shared_library(
+    name = "_dog_core",
+    deps = [":dog_core_impl"],
+    shared_lib_name = select({
+        "@platforms//os:windows": "_dog_core.pyd",
+        "//conditions:default": "_dog_core.so",
+    }),
+)

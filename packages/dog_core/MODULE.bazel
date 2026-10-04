@@ -1,0 +1,24 @@
+# Bazel module for the native core (bzlmod).
+#
+# Versions come from the Bazel Central Registry: nanobind ships its own BUILD
+# overlay there, so the extension is compiled as a plain C++ target (see
+# BUILD.bazel) instead of going through CMake.
+
+module(
+    name = "dog_core",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "nanobind", version = "3.1.0")
+bazel_dep(name = "nlohmann_json", version = "3.12.0.bcr.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+# The extension is compiled against a CPython toolchain; 3.13 is the version the
+# wheel is tagged for (and what the project's requires-python resolves to here).
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.13",
+)

@@ -8,5 +8,9 @@ dist/
 build/
 *.egg-info/
 
+# Bazel's convenience symlinks and its local caches
+bazel-*
+.bazel-cache/
+
 # Local test index's served packages (tools/local_index)
 tools/local_index/packages/

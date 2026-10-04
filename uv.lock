@@ -219,9 +219,9 @@ wheels = [
 name = "dog-core"
 version = "0.1.0"
 source = { registry = "http://127.0.0.1:8080/simple" }
-sdist = { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0.tar.gz", hash = "sha256:e279a59fdb79f0b0d20f4625f1b24e14e5dd6ac5bd8866ed451b9361fd2685b9" }
+sdist = { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0.tar.gz", hash = "sha256:2d32b705b4c0ba46312fdf5f39cad5e2d09cb340845ae756a4e7f5adf4dc4d27" }
 wheels = [
-    { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:a340fda8f234d57328ce11051c9832532c041ca41d86dab4f213a11145ac3003" },
+    { url = "http://127.0.0.1:8080/packages/dog_core-0.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:5a79ec4a3bf8da21e42b373e8c24135f279e1c95c4533ef4db18e2b27ee1715e" },
 ]
 
 [[package]]
