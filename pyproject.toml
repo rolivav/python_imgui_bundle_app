@@ -33,7 +33,7 @@ packages = ["src/zoo_app"]
 # dependencies, and uv needs a single source per package version, so a path
 # source - even one gated behind `extra = "..."` - wins for the default install
 # too and everything gets built locally. Local development therefore rebuilds
-# and republishes the wheel instead: `tools/dev.cmd` builds a fresh wheel for
+# and republishes the wheel instead: `tools/dev.py` builds a fresh wheel for
 # every package with uncommitted changes into the served folder and re-syncs,
 # so only the package you touched is rebuilt - and only a changed C++ core
 # costs compile time.

@@ -62,7 +62,7 @@ panels and the native cores, each one its own project (see below).
 ```
 .
 ├── pyproject.toml                    # the app: depends on the panels + the native core
-├── tools/                            # ./tools/dev.cmd and the local test index
+├── tools/                            # ./tools/dev.py and the local test index
 ├── src/zoo_app/
 │   ├── app.py                        # window + main loop, draws every registered panel
 │   └── panels/
@@ -128,7 +128,7 @@ uv needs a single source per package version, and because these packages are als
 plain dependencies, a `[tool.uv.sources]` path source — even one gated behind an
 `extra` — also wins for the default install, which would compile the C++ core on
 every machine. Working on a package therefore means rebuilding its wheel, which
-`tools/dev.cmd` does for the packages you changed (see below).
+`tools/dev.py` does for the packages you changed (see below).
 
 To build and upload a wheel yourself:
 
@@ -152,21 +152,25 @@ register the class in `src/zoo_app/panels/__init__.py` (`PANEL_TYPES`).
 Nothing is compiled by `uv run zoo-app`. When you edit a package under
 `packages/`, rebuild its wheel and let uv pick it up:
 
-```powershell
-./tools/dev.cmd                       # rebuild the packages whose sources changed
-./tools/dev.cmd -All                  # rebuild all of them
-./tools/dev.cmd -None                 # rebuild nothing, just run
-./tools/dev.cmd -Command python       # same, for another uv-run command
+```bash
+uv run --no-project python tools/dev.py                    # rebuild the packages whose sources changed
+uv run --no-project python tools/dev.py --all              # rebuild all of them
+uv run --no-project python tools/dev.py --none             # rebuild nothing, just run
+uv run --no-project python tools/dev.py --command python   # same, for another uv-run command
 ```
 
-`dev.cmd` builds the wheel of each stale package into `dist/` and installs every
+`dev.py` builds the wheel of each stale package into `dist/` and installs every
 package that has a current local build into the project environment with
 `uv pip install --no-deps --reinstall`. Nothing is uploaded and no index is
-involved: the built wheels never leave the machine and `uv.lock` is untouched.
-The app is then started with `uv run --no-sync`, which keeps those local wheels in
-place. Installation is cheap, idempotent and quiet (`-Verbose` shows uv's output),
-and dependencies are not dev.cmd's business: run `uv sync` after changing them.
-If you have no local builds at all, `dev.cmd` is just `uv run`.
+involved: a package's build requirements come from PyPI, the built wheels never
+leave the machine and `uv.lock` is untouched. The app is then started with
+`uv run --no-sync`, which keeps those local wheels in place. If the environment
+has never been set up (the app is missing), `dev.py` syncs it first, holding the
+locally built packages back from that sync and installing them from `dist/`
+afterwards, so the index's published wheel hashes do not matter. Installation is
+cheap, idempotent and quiet (`--verbose` shows uv's output), and dependencies are
+not dev.py's business: run `uv sync` after changing them. If you have no local
+builds at all, `dev.py` is just `uv run`.
 
 A package is stale when its sources are newer than the wheel built for it, so the
 decision does not depend on your git state; a package with no local build yet
@@ -191,30 +195,30 @@ The package index in `pyproject.toml` points at this server
 (`http://127.0.0.1:8080/simple`), so once it is running, `uv run zoo-app` gets
 the wheels from it:
 
-```powershell
+```bash
 # 1. build the panels and the native core into the served folder
-./tools/local_index/publish.cmd
+uv run --no-project python tools/local_index/publish.py
 
 # 2. serve them on http://127.0.0.1:8080 (leave running; Ctrl+C to stop)
-./tools/local_index/serve.cmd
+uv run --no-project python tools/local_index/serve.py
 
 # 3. in another terminal: uv now resolves the wheels from the index (no local
-#    build). For edits under packages/ use ./tools/dev.cmd instead - it builds
-#    and installs them locally without touching the index.
+#    build). For edits under packages/ use tools/dev.py instead - it builds and
+#    installs them locally without touching the index.
 uv sync
 uv run zoo-app
 ```
 
-The `.cmd` files are thin wrappers that run the `.ps1` scripts with
-`-ExecutionPolicy Bypass`, so Windows' default policy (which blocks unsigned
-scripts) does not get in the way; run the `.ps1` files directly if your policy
-already allows unsigned scripts. `publish.cmd` builds each distribution with
-`uv build` (a wheel and a sdist) into `dist/` and copies the artifacts into the
-directory the server serves, so a rebuilt artifact replaces the published one on
-the next request (the server is started with `-o`, which allows overwriting the
-same version), and publishing also counts as a local build for `tools/dev.cmd`.
-The server is bound to `127.0.0.1` and runs without authentication: it is a local
-test aid only. See `tools/local_index/README.md`.
+The scripts are plain Python, so they run on Windows, macOS and Linux alike.
+`publish.py` builds each distribution with `uv build` (a wheel and a sdist) into
+`dist/` and copies the artifacts into the directory the server serves, so a
+rebuilt artifact replaces the published one on the next request (the server is
+started with `-o`, which allows overwriting the same version), and publishing
+also counts as a local build for `tools/dev.py`. Building resolves each
+distribution's build requirements from PyPI instead of the local index, so the
+index does not have to be up to build a package. The server is bound to
+`127.0.0.1` and runs without authentication: it is a local test aid only. See
+`tools/local_index/README.md`.
 
 ### Docking
 

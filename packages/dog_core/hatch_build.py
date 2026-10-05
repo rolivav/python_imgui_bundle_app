@@ -121,8 +121,22 @@ def _bazel_flags() -> list[str]:
     """
     cache_root = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "dog-core-bazel"
     flags = [f"--disk_cache={cache_root / 'disk'}"]
+    flags.extend(_macos_flags())
     flags.extend(_python_link_flags())
     return flags
+
+
+def _macos_flags() -> list[str]:
+    """Raise the macOS deployment target to one the C++17 code needs.
+
+    nanobind uses aligned allocation, which the macOS SDK only exposes when the
+    deployment target is 10.13 or newer - Bazel's default is older and fails to
+    compile it. 11.0 is the floor for Apple Silicon and is safe on current Intel
+    machines too.
+    """
+    if sys.platform != "darwin":
+        return []
+    return ["--macos_minimum_os=11.0"]
 
 
 def _python_link_flags() -> list[str]:
