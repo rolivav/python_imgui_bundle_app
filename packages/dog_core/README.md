@@ -33,7 +33,10 @@ Building the wheel needs [Bazel](https://bazel.build/) — install
 [bazelisk](https://github.com/bazelbuild/bazelisk) and put it on `PATH`; it uses
 the version pinned in `.bazelversion` — plus a C++17 compiler. Everything else
 comes from the [Bazel Central Registry](https://registry.bazel.build/): nanobind
-(the binding layer) and `nlohmann/json`.
+(the binding layer) and `nlohmann/json`. The extension is compiled against the
+CPython 3.13 toolchain pinned in `MODULE.bazel`, so it only loads into Python
+3.13 (the build hook rejects other versions); the repository keeps that
+interpreter in `.python-version`.
 
 The HTTP client invokes the `curl` command line tool at runtime instead of
 linking a library: `curl` ships with Windows 10+ and with macOS; on Linux install

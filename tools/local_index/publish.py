@@ -134,6 +134,12 @@ def main(argv=None) -> int:
         )
         if not artifacts:
             fail(f"uv build produced no artifacts for {project}")
+        # Mirror the build directory: drop this project's previous artifacts
+        # first, so rebuilding under a different Python tag does not leave a
+        # stale wheel (say an old cp314 next to the new cp313) on the index.
+        for stale in SERVED_DIR.glob(f"{project}-*"):
+            if stale.is_file():
+                stale.unlink()
         for artifact in artifacts:
             shutil.copy2(artifact, SERVED_DIR)
 

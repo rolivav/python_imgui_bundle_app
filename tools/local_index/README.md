@@ -18,7 +18,9 @@ uv run --no-project python tools/local_index/publish.py
 # 2. Serve them (leave this running; Ctrl+C to stop).
 uv run --no-project python tools/local_index/serve.py
 
-# 3. In another terminal, fetch the wheels from the index.
+# 3. In another terminal: a rebuilt wheel keeps its version but changes its
+#    hash, so refresh the lock before installing from the index.
+uv lock --refresh
 uv sync
 uv run zoo-app
 ```
@@ -58,14 +60,14 @@ that index:
 ```bash
 uv run --no-project python tools/local_index/publish.py    # build wheel + sdist into packages/
 uv run --no-project python tools/local_index/serve.py      # serve them on 127.0.0.1:8080
-uv lock --refresh-package cat_panel
-uv run --reinstall-package cat_panel zoo-app
+uv lock --refresh                                          # re-read the index: rebuilt wheels have new hashes
+uv run zoo-app                                             # install the published wheels and run
 ```
 
-The last two commands are needed because a rebuilt artifact keeps its version but
-changes its hash: uv has to re-read the index metadata (`--refresh-package`) and
-reinstall (`--reinstall-package`). Against a real server the steps are the same,
-with `uv publish` for the upload.
+The `uv lock --refresh` step is needed because a rebuilt artifact keeps its
+version but changes its hash: uv has to re-read the index metadata before it can
+install the wheels. Against a real server the steps are the same, with
+`uv publish` for the upload.
 
 ## Layout
 

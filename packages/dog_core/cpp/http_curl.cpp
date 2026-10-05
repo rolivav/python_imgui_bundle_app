@@ -17,9 +17,16 @@
 #include <io.h>
 #define DOG_CORE_POPEN _popen
 #define DOG_CORE_PCLOSE _pclose
+// _popen defaults to text mode, which corrupts image bytes; the "b" plus the
+// _setmode() call below keep the pipe binary.
+#define DOG_CORE_POPEN_MODE "rb"
 #else
 #define DOG_CORE_POPEN popen
 #define DOG_CORE_PCLOSE pclose
+// macOS's (BSD) popen accepts only exactly "r" or "w" and returns EINVAL for
+// "rb" - it never needed the "b", since a POSIX pipe has no text mode to turn
+// off. glibc tolerates "rb", which is why this only shows up on macOS.
+#define DOG_CORE_POPEN_MODE "r"
 #endif
 
 namespace dog_core {
@@ -51,7 +58,7 @@ std::string http_get(const std::string& url) {
     const std::string command = "curl -sS -f -L --max-time " + std::to_string(kTimeoutSeconds) +
                                 " -A \"" + kUserAgent + "\" \"" + url + "\"";
 
-    FILE* pipe = DOG_CORE_POPEN(command.c_str(), "rb");
+    FILE* pipe = DOG_CORE_POPEN(command.c_str(), DOG_CORE_POPEN_MODE);
     if (pipe == nullptr) {
         throw std::runtime_error("could not run curl (is it installed and on PATH?)");
     }

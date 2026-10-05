@@ -20,16 +20,21 @@ splits, freely rearranged by the user).
 
 ## Requirements
 
-- [uv](https://docs.astral.sh/uv/) (Python 3.10+ is installed automatically by uv if needed)
+- [uv](https://docs.astral.sh/uv/) (installs the pinned Python — 3.13, see
+  `.python-version` — automatically if needed)
 
 Building the native core (`dog-core`) needs a C++17 compiler and
 [Bazel](https://bazel.build/) (easiest through
 [bazelisk](https://github.com/bazelbuild/bazelisk), which follows the pinned
 `.bazelversion`); nanobind and `nlohmann/json` come from the Bazel Central
-Registry. The HTTP client shells out to the `curl` command line tool, so no HTTP
-library has to be linked or installed on Windows (curl ships with Windows 10+) or
-macOS; on Linux, install `curl` if it is missing. Consuming the prebuilt wheels
-instead (see "Testing the wheel workflow with a local index") needs none of that.
+Registry. The extension is compiled against the CPython 3.13 toolchain pinned in
+`packages/dog_core/MODULE.bazel`; loading it into another minor version of Python
+crashes, so the repository pins 3.13 in `.python-version` and the build hook
+rejects any other interpreter. The HTTP client shells out to the `curl` command
+line tool, so no HTTP library has to be linked or installed on Windows (curl
+ships with Windows 10+) or macOS; on Linux, install `curl` if it is missing.
+Consuming the prebuilt wheels instead (see "Testing the wheel workflow with a
+local index") needs none of that.
 
 Its sibling `bird-core` is written in Rust and built with
 [maturin](https://www.maturin.rs/), so it needs a [Rust](https://rustup.rs/)
@@ -56,7 +61,8 @@ uv sync && uv run zoo-app
 
 ## Project layout
 
-Two kinds of projects: the application, and the distributions it consumes — the
+Two .python-version                   # pins CPython 3.13 (the native core's ABI)
+├── kinds of projects: the application, and the distributions it consumes — the
 panels and the native cores, each one its own project (see below).
 
 ```
@@ -136,10 +142,12 @@ To build and upload a wheel yourself:
 uv build --out-dir dist packages/dog_core   # wheel + sdist
 uv publish --index internal dist/*          # upload it to the package index
 ```
-
-Publishing the sdist matters for `dog-core`: its wheel only matches one Python
-version, and uv needs the sdist to resolve the project for the other versions
-allowed by `requires-python` (installing on the matching interpreter still uses
+CPython 3.13,
+the version the Bazel toolchain compiles against (see
+`packages/dog_core/MODULE.bazel`), so uv needs the sdist to resolve the project
+on other interpreters. The native core can only be built for 3.13 — the build
+hook fails on any other version instead of emitting an ABI-incompatible
+extension — and `.python-version` keeps the project on italling on the matching interpreter still uses
 the wheel, so nothing is compiled).
 
 To add another panel, copy `packages/dog_panel/` (it needs `imgui_bundle`,
@@ -202,9 +210,11 @@ uv run --no-project python tools/local_index/publish.py
 # 2. serve them on http://127.0.0.1:8080 (leave running; Ctrl+C to stop)
 uv run --no-project python tools/local_index/serve.py
 
-# 3. in another terminal: uv now resolves the wheels from the index (no local
-#    build). For edits under packages/ use tools/dev.py instead - it builds and
-#    installs them locally without touching the index.
+# 3. in another terminal: a rebuilt wheel keeps its version but changes its
+#    hash, so refresh the lock before syncing. For edits under packages/ use
+#    tools/dev.py instead - it builds and installs them locally without the
+#    index, so the lock stays untouched.
+uv lock --refresh
 uv sync
 uv run zoo-app
 ```

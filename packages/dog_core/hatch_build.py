@@ -12,6 +12,7 @@ fresh, temporary copy of the project.
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -19,6 +20,20 @@ import sysconfig
 from pathlib import Path
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
+
+# `MODULE.bazel` pins the CPython toolchain the extension is compiled against;
+# loading the result into a different minor version crashes, because the nanobind
+# ABI is not stable. A mismatch must fail the build instead of producing a wheel
+# that imports but then crashes at runtime.
+_BAZEL_PYTHON_RE = re.compile(r'python_version\s*=\s*"(\d+)\.(\d+)"')
+
+
+def _bazel_python(root: Path):
+    """The CPython version the Bazel toolchain compiles the extension against."""
+    match = _BAZEL_PYTHON_RE.search((root / "MODULE.bazel").read_text(encoding="utf-8"))
+    if match is None:
+        raise RuntimeError("could not read python_version from MODULE.bazel")
+    return int(match.group(1)), int(match.group(2))
 
 
 class BazelBuildHook(BuildHookInterface):
@@ -30,6 +45,15 @@ class BazelBuildHook(BuildHookInterface):
         if self.target_name == "sdist":
             self._include_sources(root, build_data)
             return
+
+        expected = _bazel_python(root)
+        if sys.version_info[:2] != expected:
+            raise RuntimeError(
+                "dog-core's native core is compiled against CPython "
+                f"{expected[0]}.{expected[1]} (MODULE.bazel), but this build runs "
+                f"Python {sys.version_info[0]}.{sys.version_info[1]}; the extension "
+                "would be ABI-incompatible. Use the version pinned in .python-version."
+            )
 
         extension = self._build_extension(root)
 
